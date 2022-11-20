@@ -17,17 +17,22 @@ const int echoPin = D6;
 // Inicializacion de sensor fc28
 const int fc_sensor = A0;
 
+typedef struct{
+  float humidity;
+  float temperature;
+} dhtResponse;
+
 /************************* WiFi Access Point *********************************/
 
-#define WLAN_SSID "ARTEFACTOS"
-#define WLAN_PASS "ARTEFACTOS"
+#define WLAN_SSID "S9"
+#define WLAN_PASS "daniamigo"
 
 /************************* Adafruit.io Setup *********************************/
 
 #define AIO_SERVER "io.adafruit.com"
 #define AIO_SERVERPORT 1883 // use 8883 for SSL
-#define AIO_USERNAME "carlosxmerca"
-#define AIO_KEY "aio_eAyM99DuWZ9R2Wqg1HRBsMLl648H"
+#define AIO_USERNAME "MiguelAcosta"
+#define AIO_KEY "aio_vcbK23kDltGp6mVNo0kaXeyfLOID"
 
 /************ Global State (you don't need to change this!) ******************/
 
@@ -42,7 +47,10 @@ Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO
 /****************************** Feeds for Publishing***************************************/
 // Setup a feed called 'photocell' for publishing.
 Adafruit_MQTT_Publish user = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/usuario");
-
+Adafruit_MQTT_Publish humidityChart = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/humiditychart");
+Adafruit_MQTT_Publish humiditySoil = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/humiditysoil");
+Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/humidity");
+Adafruit_MQTT_Publish waterIndicator = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/waterindicator");
 /****************************** Feeds for Subscribing***************************************/
 // Setup a feed called 'slider' for subscribing to changes on the slider
 Adafruit_MQTT_Subscribe slider = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/slider", MQTT_QOS_1);
@@ -127,6 +135,9 @@ void loop()
   { // ping the server to keep the mqtt connection alive
     mqtt.disconnect();
   }
+  dhtResponse data = dht11();
+
+  humidity.publish(data.humidity);
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
@@ -156,7 +167,7 @@ void MQTT_connect()
   Serial.println("MQTT Connected!");
 }
 
-void dht11()
+dhtResponse dht11()
 {
   // Esperamos 5 segundos entre medidas
   delay(5000);
@@ -170,7 +181,7 @@ void dht11()
   if (isnan(h) || isnan(t))
   {
     Serial.println("Error obteniendo los datos del sensor DHT11");
-    return;
+    return  {0, 0};
   }
 
   // Calcular el índice de calor en grados centígrados
@@ -185,13 +196,15 @@ void dht11()
   Serial.print("Índice de calor: ");
   Serial.print(hic);
   Serial.print(" *C \n");
+
+  return {h, t};
 }
 
 void fc28()
 {
   delay(1000);
   // put your main code here, to run repeatedly:
-  lectura = analogRead(fc_sensor);
+  int lectura = analogRead(fc_sensor);
 
   Serial.print("Valor: ");
   Serial.println(lectura);
@@ -209,10 +222,10 @@ void ultrasonico()
   digitalWrite(trigPin, LOW);
 
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
+  int duration = pulseIn(echoPin, HIGH);
 
   // Calculating the distance
-  distance = duration / 58;
+  int distance = duration / 58;
   level = total_distance - distance;
 
   // Prints the distance on the Serial Monitor
