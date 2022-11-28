@@ -199,8 +199,8 @@ responseDH funRes(String response){
 bool wateringRoutine(int day, int hour){
   if((millis() - lastTime) > timerDelay){
     if((hour == 5 || hour == 19) && Days[day] != 0) {
-      //watering();
       Serial.println("Regando...");
+      watering();
       Days[day]--;
       return true;
     }
