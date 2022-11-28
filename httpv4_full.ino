@@ -27,9 +27,7 @@ String serverName = "https://vodkaapi.fly.dev/";
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.
 unsigned long lastTime = 0;
-// Timer set to 10 minutes (600000)
-//unsigned long timerDelay = 600000;
-// Set timer to 5 seconds (5000)
+// Timer set to 30 seconds
 unsigned long timerDelay = 1*1000*30;
 
 // Pines
@@ -121,16 +119,11 @@ void loop() {
     
       HTTPClient http;
       String serverPath = serverName + "time";
-      // String serverPath = serverName + "message/1";
       
-      // Your Domain name with URL path or IP address with path
+      // Start client
       http.begin(*client, serverPath.c_str());
-      
+      // Set content type
       http.addHeader("Content-Type", "application/json");
-
-      // If you need Node-RED/server authentication, insert user and password below
-      // http.setAuthorization("AC35f55d787a8a836461c3c932ca9ce61d", "5b6fcd2abc02fa9ec8522f352f173c31");
-      String body = ""; 
          
       // Send HTTP GET request
       int httpResponseCode = http.GET();
@@ -153,11 +146,12 @@ void loop() {
         if (waterState){
           int notification = ultrasonico();
           serverPath = serverName + "message/" + String(notification);
-          // Your Domain name with URL path or IP address with path
+          // Start client
           http.begin(*client, serverPath.c_str());
+          // Set content type
           http.addHeader("Content-Type", "application/json");
           
-          // Send HTTP GET request
+          // Send HTTP POST request
           int httpResponseCode = http.POST("");
           
           if (httpResponseCode>0) {
@@ -183,6 +177,7 @@ void loop() {
     else {
       Serial.println("WiFi Disconnected");
     }
+    // Update last time
     lastTime = millis();
   }
 }
@@ -211,13 +206,14 @@ bool wateringRoutine(int day, int hour){
       for(int i = 0; i < 7; i++)
         Days[i] = 2;
     }
+    // Update last time
     lastTime = millis();
   }
   return false;
 }
 
+// Watering routine
 void watering(){
-  // put your main code here, to run repeatedly:
   digitalWrite(bomba, LOW);
   delay(2000);
   digitalWrite(bomba, HIGH);
