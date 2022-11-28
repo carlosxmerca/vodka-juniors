@@ -35,13 +35,16 @@ app.post("/message/:type", async (req, res) => {
       break;
     case 2:
       msg = "Tanque a punto de vaciarse!";
+      break;
     case 3:
       msg = "Tanque en capacidad media!";
+      break;
     case 4:
       msg = "Tanque lleno!";
       break;
     default:
       msg = "Error";
+      break;
   }
 
   // console.log(type, msg);
