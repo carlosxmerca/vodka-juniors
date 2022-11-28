@@ -74,10 +74,13 @@ Adafruit_MQTT_Publish waterIndicator = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME
 void setup() {
   // Comenzamos el sensor DHT
   pinMode(fc_sensor, INPUT);
+  pinMode(bomba, OUTPUT);
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT);  // Sets the echoPin as an Input
+  
   dht.begin();
   Serial.begin(115200); 
+  digitalWrite(bomba, LOW);
 
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -212,12 +215,12 @@ bool wateringRoutine(int day, int hour){
   return false;
 }
 
-// Watering routine
+// Watering routine -> water for 10 seconds
 void watering(){
-  digitalWrite(bomba, LOW);
-  delay(2000);
   digitalWrite(bomba, HIGH);
-  delay(1000);
+  delay(10000);
+  digitalWrite(bomba, LOW);
+  delay(200);
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
