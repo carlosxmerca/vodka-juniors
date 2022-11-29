@@ -1,4 +1,4 @@
-## Vodja Juniors
+## Vodka Juniors
 ### Sistema de riego automatizado para interiores con función de notificaciones
 
 #### Descripción del proyecto
