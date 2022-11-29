@@ -11,8 +11,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
-const char* ssid = "S9";
-const char* password = "daniamigo";
+const char* ssid = "CLARO_CD928A";
+const char* password = "Bca2cca84F";
 
 /************************* Adafruit.io Setup *********************************/
 
@@ -27,12 +27,12 @@ String serverName = "https://vodkaapi.fly.dev/";
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.
 unsigned long lastTime = 0;
-// Timer set to 30 seconds
+// Timer set to 30 seconds -> test pourposes
 unsigned long timerDelay = 1*1000*30;
 
 // Horas de riego
 int target1 = 7;
-int target2 = 16;
+int target2 = 20;
 
 // Pines
 const int bomba = D8;
@@ -51,6 +51,12 @@ String response;
 int total_distance = 24;
 int total_deposito = 14;
 int level;
+// Optimization
+String payload;
+String serverPath;
+int notification;
+bool waterState;
+int httpResponseCode;
 // Structs
 struct responseDH{
     int day;
@@ -115,25 +121,25 @@ void sendwamessage() {
 
   HTTPClient httpwa;
 
-  int notification = ultrasonico();
-  String serverPath = serverName + "message/" + String(notification);
+  int notificationwa = ultrasonico();
+  String serverPathwa = serverName + "message/" + String(notificationwa);
   // Start client
-  httpwa.begin(*client, serverPath.c_str());
+  httpwa.begin(*client, serverPathwa.c_str());
   // Set content type
   httpwa.addHeader("Content-Type", "application/json");
   
   // Send HTTP POST request
-  int httpResponseCode = httpwa.POST("");
+  int httpResponseCodewa = httpwa.POST("");
   
-  if (httpResponseCode>0) {
+  if (httpResponseCodewa>0) {
     Serial.print("HTTP Response code Wha message: ");
-    Serial.println(httpResponseCode);
+    Serial.println(httpResponseCodewa);
     Serial.println();
-    String payload = httpwa.getString();
+    payload = httpwa.getString();
   }
   else {
     Serial.print("Error code: ");
-    Serial.println(httpResponseCode);
+    Serial.println(httpResponseCodewa);
   }
 
   // Free resources
@@ -181,7 +187,7 @@ void loop() {
       client->setInsecure();
     
       HTTPClient http;
-      String serverPath = serverName + "time";
+      serverPath = serverName + "time";
       
       // Start client
       http.begin(*client, serverPath.c_str());
@@ -189,27 +195,27 @@ void loop() {
       http.addHeader("Content-Type", "application/json");
          
       // Send HTTP GET request
-      int httpResponseCode = http.GET();
+      httpResponseCode = http.GET();
       
       if (httpResponseCode>0) {
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
-        String response = http.getString();
+        response = http.getString();
         // Serial.println(response);
 
         responseDH res = funRes(response);
-        int hour = res.hour;
-        int day = res.day;
+        hour = res.hour;
+        day = res.day;
         /*
         Serial.println(hour);
         Serial.println(day);
         */
         // Watering - routine
-        bool waterState = wateringRoutine(day, hour);
+        waterState = wateringRoutine(day, hour);
         if (waterState){
-          // sendwamessage();
+          // sendwamessage(); -> send whatsapp message
           
-          int notification = ultrasonico();
+          notification = ultrasonico();
           serverPath = serverName + "message/" + String(notification);
           // Start client
           http.begin(*client, serverPath.c_str());
@@ -217,16 +223,16 @@ void loop() {
           http.addHeader("Content-Type", "application/json");
           
           // Send HTTP POST request
-          int httpResponseCode = http.POST("");
+          httpResponseCode = http.POST("");
           
           if (httpResponseCode>0) {
             Serial.print("HTTP Response code Wha message: ");
             Serial.println(httpResponseCode);
             Serial.println();
-            String payload = http.getString();
+            payload = http.getString();
           }
           else {
-            Serial.print("Error code message: ");
+            Serial.print("Error code get time: ");
             Serial.println(httpResponseCode);
           }
           
